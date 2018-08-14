@@ -3,13 +3,11 @@ import os
 import uuid
 from sys import argv
 import colorama
-
+import glob
 
 
 # Flags
 dir__ = False 
-wx__ = False
-hx__ = False
 
 
 class bcolors:
@@ -23,12 +21,30 @@ class bcolors:
     UNDERLINE = '\033[4m'
 
 
+def create_thumbnail(path, size):
+    filename, ext = os.path.splitext(path)
+    uid = uuid.uuid4()
+    img = Image.open(path)
+    img.thumbnail(size)
+    img.save('{}_thumb_{}{}'.format(filename, uid, ext), 'JPEG')
 
 
 def main():
     colorama.init()
-    size = 128, 128
-    _argv = argv[1:] #first element is script name
+    # thumbnail
+    size = [128, 128]
+    # first element is script name
+    _argv = argv[1:] 
+    
+    # si se consulto ayuda
+    try:
+        h = _argv.index('-h')
+        print(bcolors.HEADER + 'Ayuda no implementada' + bcolors.ENDC)
+        return True
+    except ValueError:
+        pass
+    
+    # ¿se evalua un directorio?
     try:
         dir__ = _argv.index('-d')
         _argv.pop(dir__)
@@ -36,27 +52,44 @@ def main():
     except ValueError:
         dir__ = False
 
-    #if len(map())
+    # extra tags
+    i = 0
+    r = []
+    for tag in _argv:
+        if tag[:2] == '-s':
+            size = list(map(lambda x: int(x), tag[2:].split('x')))
+            r.append(i)
 
-    #
-    # if dir__ == -1:
-    #    _argv.pop(dir__)
-    #    dir__ = True
+        elif tag[:2] == '-w':
+            size[0] = int(tag[2:])
+            r.append(i)
+
+        elif tag[:2] == '-h':
+            size[1] = int(tag[2:])
+            r.append(i)
+
+        i += 1
+
+    # remove tags
+    j = 0
+    for i in r:
+        _argv.pop(i - j)
+        j += 1
 
     path = None
     if len(_argv) == 1:
-        path = argv[0]
+        path = _argv[0]
+
     else:
-        print(bcolors.FAIL + "Error faltan parametros" + bcolors.ENDC)
+        print(bcolors.FAIL + 'Error faltan parametros' + bcolors.ENDC)
+        print(size)
         print(bcolors.WARNING + '|'.join(argv[1:]) + bcolors.ENDC)
 
-
-    #filename, ext = os.path.splitext(path)
-    #uid = uuid.uuid4()
-    #img = Image.open(path)
-    #img.thumbnail(size)
-    #img.save('{}_thumb_{}.{}'.format(filename, uid, ext), 'JPEG')
-
+    if dir__:
+        for path_ in glob.glob(path + '*.jpg'):
+            create_thumbnail(path_, size)
+    else:
+        create_thumbnail(path, size)
 
 if __name__ == '__main__':
     main()
