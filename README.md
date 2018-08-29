@@ -1,4 +1,4 @@
-#Yairt
+# Yairt
 
 Yet anoter Image Resize Tool
 
