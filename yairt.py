@@ -24,7 +24,7 @@ class bcolors:
     UNDERLINE = '\033[4m'
 
 
-DESCRIPTION = 'no description'
+DESCRIPTION = 'YAIRT Yet another image resize tool'
 HELP = {
     '-w': 'define el ancho maximo',
     '-h': 'define el alto maximo',
@@ -35,7 +35,6 @@ HELP = {
 
 def color_print(text, color=''):
     print(color + text + bcolors.ENDC)
-
 
 
 def create_thumbnail(path, size):
@@ -62,21 +61,22 @@ def main():
     parser.add_argument('-w', default=width__, help=HELP['-w'])
     parser.add_argument('-hh', default=height__, help=HELP['-h'])
     parser.add_argument('-s', default='{}x{}'.format(width__,height__), help=HELP['-h'])
-    args = parser.parse_args()
 
-    size = [128, 128]
+    args = parser.parse_args()
+    size = [width__, height__]
     filepath = args.arg1
-    
+
     if args.o:
         fileout = args.o
-
-    # print(args)
 
     if args.s:
         size = list(map(lambda x: int(x), args.s.split('x')))
 
     if args.w != False:
         size[0] = int(args.w)
+
+    if args.hh != False:
+        size[1] = int(args.hh)
 
     if args.d:
         if (os.path.isdir(filepath)):
