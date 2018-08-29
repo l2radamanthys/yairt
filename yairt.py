@@ -1,13 +1,16 @@
-from PIL import Image
+import argparse
 import os
+from PIL import Image
 import uuid
 from sys import argv
 import colorama
 import glob
 
 
-# Flags
-dir__ = False 
+
+
+width__ = 200
+height__ = 200
 
 
 class bcolors:
@@ -21,75 +24,72 @@ class bcolors:
     UNDERLINE = '\033[4m'
 
 
+DESCRIPTION = 'no description'
+HELP = {
+    '-w': 'define el ancho maximo',
+    '-h': 'define el alto maximo',
+    '-o': 'archivo o directorio de salida',
+    '-d': 'especifica que lo que se analizara es un directorio'
+}
+
+
+def color_print(text, color=''):
+    print(color + text + bcolors.ENDC)
+
+
+
 def create_thumbnail(path, size):
     filename, ext = os.path.splitext(path)
     uid = uuid.uuid4()
     img = Image.open(path)
     img.thumbnail(size)
-    img.save('{}_thumb_{}{}'.format(filename, uid, ext), 'JPEG')
+    filename = '{}_thumb_{}{}'.format(filename, uid, ext)
+    img.save(filename , 'JPEG')
+    color_print('Creada: ' + filename, bcolors.OKGREEN) 
+
+
+def create_uid(name):
+    uid = uuid.uuid4()
+    return '{}_thumb_{}'.format(name, uid)
 
 
 def main():
     colorama.init()
-    # thumbnail
+    parser = argparse.ArgumentParser(description=DESCRIPTION)
+    parser.add_argument('arg1')
+    parser.add_argument('-d', action='store_true', help=HELP['-d'])
+    parser.add_argument('-o', default=False, help=HELP['-o'])
+    parser.add_argument('-w', default=width__, help=HELP['-w'])
+    parser.add_argument('-hh', default=height__, help=HELP['-h'])
+    parser.add_argument('-s', default='{}x{}'.format(width__,height__), help=HELP['-h'])
+    args = parser.parse_args()
+
     size = [128, 128]
-    # first element is script name
-    _argv = argv[1:] 
+    filepath = args.arg1
     
-    # si se consulto ayuda
-    try:
-        h = _argv.index('-h')
-        print(bcolors.HEADER + 'Ayuda no implementada' + bcolors.ENDC)
-        return True
-    except ValueError:
-        pass
-    
-    # ¿se evalua un directorio?
-    try:
-        dir__ = _argv.index('-d')
-        _argv.pop(dir__)
-        dir__ = True
-    except ValueError:
-        dir__ = False
+    if args.o:
+        fileout = args.o
 
-    # extra tags
-    i = 0
-    r = []
-    for tag in _argv:
-        if tag[:2] == '-s':
-            size = list(map(lambda x: int(x), tag[2:].split('x')))
-            r.append(i)
+    # print(args)
 
-        elif tag[:2] == '-w':
-            size[0] = int(tag[2:])
-            r.append(i)
+    if args.s:
+        size = list(map(lambda x: int(x), args.s.split('x')))
 
-        elif tag[:2] == '-h':
-            size[1] = int(tag[2:])
-            r.append(i)
+    if args.w != False:
+        size[0] = int(args.w)
 
-        i += 1
-
-    # remove tags
-    j = 0
-    for i in r:
-        _argv.pop(i - j)
-        j += 1
-
-    path = None
-    if len(_argv) == 1:
-        path = _argv[0]
-
+    if args.d:
+        if (os.path.isdir(filepath)):
+            for path_ in glob.glob(filepath + '*.jpg'):
+                create_thumbnail(filepath_, size)
+        else:
+            color_print('Error "{}" no es un directorio'.format(filepath), bcolors.FAIL)
     else:
-        print(bcolors.FAIL + 'Error faltan parametros' + bcolors.ENDC)
-        print(size)
-        print(bcolors.WARNING + '|'.join(argv[1:]) + bcolors.ENDC)
+        if (os.path.isfile(filepath)):
+            create_thumbnail(filepath, size)
+        else:
+            color_print('Error "{}" no es un archivo'.format(filepath), bcolors.FAIL)
 
-    if dir__:
-        for path_ in glob.glob(path + '*.jpg'):
-            create_thumbnail(path_, size)
-    else:
-        create_thumbnail(path, size)
 
 if __name__ == '__main__':
     main()

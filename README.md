@@ -7,7 +7,7 @@ funciona a traves de linea de comandos
 
 ## Uso
 
-    python yairt.py path [-d] [-wWidth] [-hHeight] [-sWxH]
+    ./yairt path [-d] [-w] [-hh] [-s] [-o]
 
 
 ## Requerimientos
